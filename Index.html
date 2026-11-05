@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CinePlus - Votre cinéma gratuit</title>
+<style>
+:root{--red:#e50914;--bg:#080808;--panel:#171717}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:white;font-family:Arial,sans-serif}
+header{height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;background:#090909;position:sticky;top:0;z-index:5}
+.logo{font-size:27px;font-weight:900;color:var(--red);letter-spacing:-1px}
+nav{display:flex;gap:22px}
+nav a{color:#ddd;text-decoration:none;font-size:14px}
+.search{width:160px;background:#222;border:1px solid #444;color:white;padding:10px;border-radius:5px}
+.hero{min-height:440px;padding:90px 7% 55px;background:linear-gradient(90deg,#080808 10%,rgba(0,0,0,.8) 50%,rgba(0,0,0,.15)),linear-gradient(0deg,#080808,transparent),url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1600') center/cover}
+.tag{color:#ff5555;font-weight:bold;letter-spacing:2px}
+.hero h1{font-size:clamp(38px,6vw,65px);margin:15px 0}
+.hero p{max-width:500px;color:#ddd;line-height:1.7}
+.btn{border:0;padding:13px 23px;border-radius:5px;font-weight:bold;cursor:pointer;margin:10px 8px 0 0}
+.primary{background:var(--red);color:white}
+.secondary{background:#444;color:white}
+section{padding:25px 5%}
+.section-title{font-size:22px;margin-bottom:18px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.filter{background:#252525;border:1px solid #444;color:white;padding:9px 16px;border-radius:20px;cursor:pointer}
+.filter.active{background:var(--red);border-color:var(--red)}
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:17px}
+.movie{background:var(--panel);border-radius:8px;overflow:hidden;cursor:pointer;transition:.2s}
+.movie:hover{transform:scale(1.035)}
+.poster{height:220px;background-size:cover;background-position:center;position:relative}
+.poster span{position:absolute;top:10px;left:9px;background:var(--red);padding:5px 8px;font-size:10px;border-radius:3px}
+.info{padding:12px}
+.info h3{font-size:15px;margin:0 0 8px}
+.info p{font-size:12px;color:#aaa;margin:0}
+footer{text-align:center;padding:35px;color:#888;background:#111;margin-top:40px}
+.modal{display:none;position:fixed;inset:0;background:#000e;z-index:10;align-items:center;justify-content:center;padding:15px}
+.modal.open{display:flex}
+.modal-content{background:#171717;padding:20px;border-radius:10px;width:min(800px,100%)}
+.modal video{width:100%;max-height:65vh;background:black}
+.close{float:right;background:var(--red);color:white;border:0;padding:9px 15px;cursor:pointer}
+@media(max-width:800px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.poster{height:180px}nav{gap:10px}nav a{font-size:12px}}
+@media(max-width:500px){header{padding:0 4%;height:auto;min-height:65px;flex-wrap:wrap;gap:10px;padding-top:10px;padding-bottom:10px}.logo{font-size:23px}nav{order:3;width:100%;justify-content:space-between}.search{width:125px}.hero{min-height:360px;padding:65px 6% 40px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.poster{height:190px}}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">CINEPLUS</div>
+<nav>
+<a href="#">Accueil</a>
+<a href="#films">Films</a>
+<a href="#films">Découvrir</a>
+</nav>
+<input class="search" id="search" placeholder="Rechercher..." aria-label="Rechercher un film">
+</header>
+
+<div class="hero">
+<div class="tag">BIENVENUE SUR CINEPLUS</div>
+<h1>Le cinéma<br>à volonté.</h1>
+<p>Découvrez un univers de films, de documentaires et d'histoires passionnantes. Votre divertissement commence ici.</p>
+<button class="btn primary" onclick="playFilm()">▶ Regarder</button>
+<button class="btn secondary" onclick="document.getElementById('films').scrollIntoView({behavior:'smooth'})">Découvrir les films</button>
+</div>
+
+<section id="films">
+<h2 class="section-title">Explorer le catalogue</h2>
+<div class="filters">
+<button class="filter active" onclick="filterFilms('Tous',this)">Tous</button>
+<button class="filter" onclick="filterFilms('Animation',this)">Animation</button>
+<button class="filter" onclick="filterFilms('Documentaire',this)">Documentaires</button>
+<button class="filter" onclick="filterFilms('Aventure',this)">Aventure</button>
+</div>
+<div class="grid" id="catalogue"></div>
+</section>
+
+<div class="modal" id="modal">
+<div class="modal-content">
+<button class="close" onclick="closeFilm()">Fermer ✕</button>
+<h2 id="videoTitle">CinePlus</h2>
+<video id="player" controls playsinline>
+<source src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+Votre navigateur ne prend pas en charge cette vidéo.
+</video>
+<p>Film de démonstration sous licence Creative Commons.</p>
+</div>
+</div>
+
+<footer>
+<div class="logo">CINEPLUS</div>
+<p>Votre cinéma, votre univers.</p>
+<p>© 2026 CinePlus. Tous droits réservés.</p>
+<p>Les films du catalogue seront ajoutés avec les autorisations nécessaires.</p>
+</footer>
+
+<script>
+const films=[
+{title:"Big Buck Bunny",genre:"Animation",year:"2008",image:"https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=500"},
+{title:"Le monde sauvage",genre:"Documentaire",year:"2025",image:"https://images.unsplash.com/photo-1472396961693-142e6e269027?w=500"},
+{title:"Voyage extraordinaire",genre:"Aventure",year:"2025",image:"https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500"},
+{title:"Océan mystérieux",genre:"Documentaire",year:"2025",image:"https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=500"},
+{title:"Le grand voyage",genre:"Aventure",year:"2025",image:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=500"},
+{title:"Univers animé",genre:"Animation",year:"2025",image:"https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=500"},
+{title:"Nature vivante",genre:"Documentaire",year:"2025",image:"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=500"},
+{title:"Terres inconnues",genre:"Aventure",year:"2025",image:"https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=500"}
+];
+let currentFilter="Tous";
+function render(){
+const query=document.getElementById("search").value.toLowerCase();
+const list=films.filter(f=>(currentFilter==="Tous"||f.genre===currentFilter)&&f.title.toLowerCase().includes(query));
+document.getElementById("catalogue").innerHTML=list.map(f=>`
+<div class="movie" onclick="playFilm('${f.title}')">
+<div class="poster" style="background-image:url('${f.image}')"><span>${f.genre}</span></div>
+<div class="info"><h3>${f.title}</h3><p>${f.year} · ${f.genre}</p></div>
+</div>`).join("")||"<p>Aucun film trouvé.</p>";
+}
+function filterFilms(genre,button){
+currentFilter=genre;
+document.querySelectorAll(".filter").forEach(b=>b.classList.remove("active"));
+button.classList.add("active");
+render();
+}
+function playFilm(title="Big Buck Bunny"){
+document.getElementById("videoTitle").textContent=title;
+document.getElementById("modal").classList.add("open");
+document.getElementById("player").load();
+}
+function closeFilm(){
+document.getElementById("player").pause();
+document.getElementById("modal").classList.remove("open");
+}
+document.getElementById("search").addEventListener("input",render);
+render();
+</script>
+</body>
+</html>
